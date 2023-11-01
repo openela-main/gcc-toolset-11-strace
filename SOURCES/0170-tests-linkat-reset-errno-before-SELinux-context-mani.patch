@@ -1,0 +1,122 @@
+From f5fd689e40322a7b08a97eb2d26f192610728230 Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Tue, 18 Jan 2022 16:10:28 +0100
+Subject: [PATCH 170/174] tests/linkat: reset errno before SELinux context
+ manipulation
+
+To avoid printing a stale error information in case of mismatch check
+failure.
+
+* tests/linkat.c: Include <errno.h>.
+(main): Add "errno = 0" before update_secontext_field calls.
+---
+ tests/linkat.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/tests/linkat.c b/tests/linkat.c
+index 1a869e3..c3e2ee4 100644
+--- a/tests/linkat.c
++++ b/tests/linkat.c
+@@ -10,6 +10,7 @@
+ #include "tests.h"
+ #include "scno.h"
+ 
++#include <errno.h>
+ #include <fcntl.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -91,6 +92,7 @@ main(void)
+ 	free(sample_1_secontext);
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
++	errno = 0;
+ 	update_secontext_field(sample_1, SECONTEXT_USER, "system_u");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 
+@@ -112,6 +114,7 @@ main(void)
+ 	free(sample_1_secontext);
+ #endif
+ 
++	errno = 0;
+ 	update_secontext_field(sample_1, SECONTEXT_TYPE, "default_t");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 	sample_2_secontext = sample_1_secontext;
+@@ -142,6 +145,7 @@ main(void)
+ 	int dfd_old = get_dir_fd(".");
+ 	char *cwd = get_fd_path(dfd_old);
+ 
++	errno = 0;
+ 	update_secontext_field(".", SECONTEXT_TYPE, "default_t");
+ 	char *dfd_old_secontext = SECONTEXT_FILE(".");
+ 
+--- a/tests-m32/linkat.c
++++ b/tests-m32/linkat.c
+@@ -10,6 +10,7 @@
+ #include "tests.h"
+ #include "scno.h"
+ 
++#include <errno.h>
+ #include <fcntl.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -91,6 +92,7 @@ main(void)
+ 	free(sample_1_secontext);
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
++	errno = 0;
+ 	update_secontext_field(sample_1, SECONTEXT_USER, "system_u");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 
+@@ -112,6 +114,7 @@ main(void)
+ 	free(sample_1_secontext);
+ #endif
+ 
++	errno = 0;
+ 	update_secontext_field(sample_1, SECONTEXT_TYPE, "default_t");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 	sample_2_secontext = sample_1_secontext;
+@@ -142,6 +145,7 @@ main(void)
+ 	int dfd_old = get_dir_fd(".");
+ 	char *cwd = get_fd_path(dfd_old);
+ 
++	errno = 0;
+ 	update_secontext_field(".", SECONTEXT_TYPE, "default_t");
+ 	char *dfd_old_secontext = SECONTEXT_FILE(".");
+ 
+--- a/tests-mx32/linkat.c
++++ b/tests-mx32/linkat.c
+@@ -10,6 +10,7 @@
+ #include "tests.h"
+ #include "scno.h"
+ 
++#include <errno.h>
+ #include <fcntl.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -91,6 +92,7 @@ main(void)
+ 	free(sample_1_secontext);
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
++	errno = 0;
+ 	update_secontext_field(sample_1, SECONTEXT_USER, "system_u");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 
+@@ -112,6 +114,7 @@ main(void)
+ 	free(sample_1_secontext);
+ #endif
+ 
++	errno = 0;
+ 	update_secontext_field(sample_1, SECONTEXT_TYPE, "default_t");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 	sample_2_secontext = sample_1_secontext;
+@@ -142,6 +145,7 @@ main(void)
+ 	int dfd_old = get_dir_fd(".");
+ 	char *cwd = get_fd_path(dfd_old);
+ 
++	errno = 0;
+ 	update_secontext_field(".", SECONTEXT_TYPE, "default_t");
+ 	char *dfd_old_secontext = SECONTEXT_FILE(".");
+ 
+-- 
+2.1.4
+

@@ -1,0 +1,17 @@
+Index: strace-5.12/src/unwind.c
+===================================================================
+--- strace-5.12.orig/src/unwind.c	2018-12-10 01:00:00.000000000 +0100
++++ strace-5.12/src/unwind.c	2020-06-02 11:13:42.777871147 +0200
+@@ -9,6 +9,12 @@
+ #include "unwind.h"
+ 
+ #ifdef USE_DEMANGLE
++/*
++ * demangle.h defines ARRAY_SIZE without proper guard, and its definition
++ * is "good enough" for us.
++ */
++#undef ARRAY_SIZE
++
+ # if defined HAVE_DEMANGLE_H
+ #  include <demangle.h>
+ # elif defined HAVE_LIBIBERTY_DEMANGLE_H

@@ -1,0 +1,55 @@
+From e27b06773eaf5c0307bcc5637d7457be9be1e6ea Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Wed, 1 Dec 2021 17:11:02 +0100
+Subject: [PATCH] print_ifindex: fix IFNAME_QUOTED_SZ definition
+
+sizeof(IFNAMSIZ) instead of IFNAMSIZ was mistakenly used
+for IFNAME_QUOTED_SZ initial definition in commit v4.23~87
+"print_ifindex: respect xlat style settings".
+
+* src/print_ifindex.c (IFNAME_QUOTED_SZ): Use IFNAMSIZ
+instead of sizeof(IFNAMSIZ).
+* NEWS: Mention it.
+
+Reported-by: Paulo Andrade <pandrade@redhat.com>
+Suggested-by: Paulo Andrade <pandrade@redhat.com>
+Fixes: v4.23~87 "print_ifindex: respect xlat style settings"
+References: https://bugzilla.redhat.com/show_bug.cgi?id=2028146
+---
+ NEWS                | 4 ++++
+ src/print_ifindex.c | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/NEWS b/NEWS
+index 9bab673..a3036b8 100644
+--- a/NEWS
++++ b/NEWS
+@@ -16,6 +16,12 @@ Noteworthy changes in release ?.?? (????-??-??)
+     PTRACE_*, RTM_*, RTPROT_*, TRAP_*, UFFD_*, UFFDIO_*, and V4L2_* constants.
+   * Updated lists of ioctl commands from Linux 5.13.
+ 
++ * Bug fixes
++  * Fixed insufficient buffer size used for network interface name printing,
++    that previously led to assertions on attempts of printing interface names
++    that require quoting, for example, names longer than 4 characters in -xx
++    mode (addresses RHBZ bug #2028146).
++
+ * Portability
+   * On powerpc and powerpc64, linux kernel >= 2.6.23 is required.
+     Older versions without a decent PTRACE_GETREGS support will not work.
+diff --git a/src/print_ifindex.c b/src/print_ifindex.c
+index ec48093..dc9d592 100644
+--- a/src/print_ifindex.c
++++ b/src/print_ifindex.c
+@@ -13,7 +13,7 @@
+ 
+ # define INI_PFX "if_nametoindex(\""
+ # define INI_SFX "\")"
+-# define IFNAME_QUOTED_SZ (sizeof(IFNAMSIZ) * 4 + 3)
++# define IFNAME_QUOTED_SZ (IFNAMSIZ * 4 + 3)
+ 
+ const char *
+ get_ifname(const unsigned int ifindex)
+-- 
+2.1.4
+
