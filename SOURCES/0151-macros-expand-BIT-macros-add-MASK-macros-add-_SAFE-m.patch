@@ -1,0 +1,70 @@
+From 3f3dd44f1964c54b55e8c84343579bd7c1924df5 Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Wed, 18 Aug 2021 21:49:12 +0200
+Subject: [PATCH 148/150] macros: expand BIT macros, add MASK macros; add
+ *_SAFE macros
+
+These macros might make reading a code that often converts between powers
+of 2 and values/masks a bit easier;  moreover, the *_SAFE versions should
+help in cases where the shift values are expected to be equal to the type
+bit width (which lead to UB otherwise).
+
+Switching from BIT to BIT32 should also clarify bitness, which may be somewhat
+murky at times (cf. printxval, printflags, and printxvals).
+
+* src/macros.h [!BIT] (BIT): Rename to...
+[!BIT32] (BIT32): ...this.
+[!BIT64] (BIT64): New macro.
+[!MASK32] (MASK32): Likewise.
+[!MASK64] (MASK64): Likewise.
+(BIT32_SAFE, BIT64_SAFE, MASK32_SAFE, MASK64_SAFE): New macros.
+(FLAG): Use BIT32.
+---
+ src/macros.h | 30 +++++++++++++++++++++++++++---
+ 1 file changed, 27 insertions(+), 3 deletions(-)
+
+diff --git a/src/macros.h b/src/macros.h
+index 467f5d0..2d7a83d 100644
+--- a/src/macros.h
++++ b/src/macros.h
+@@ -78,10 +78,34 @@ is_filled(const char *ptr, char fill, size_t size)
+ # define IS_ARRAY_ZERO(arr_)	\
+ 	is_filled((const char *) (arr_), 0, sizeof(arr_) + MUST_BE_ARRAY(arr_))
+ 
+-# ifndef BIT
+-#  define BIT(x_) (1U << (x_))
++# ifndef BIT32
++#  define BIT32(x_) (1U << (x_))
+ # endif
+ 
+-# define FLAG(name_) name_ = BIT(name_##_BIT)
++# ifndef BIT64
++#  define BIT64(x_) (1ULL << (x_))
++# endif
++
++# ifndef MASK32
++#  define MASK32(x_) (BIT32(x_) - 1U)
++# endif
++
++# ifndef MASK64
++#  define MASK64(x_) (BIT64(x_) - 1ULL)
++# endif
++
++/*
++ * "Safe" versions that avoid UB for values that are >= type bit size
++ * (the usually expected behaviour of the bit shift in that case is zero,
++ * but at least powerpc is notorious for returning the input value when shift
++ * by 64 bits is performed).
++ */
++
++# define BIT32_SAFE(x_) ((x_) < 32 ? BIT32(x_) : 0)
++# define BIT64_SAFE(x_) ((x_) < 64 ? BIT64(x_) : 0)
++# define MASK32_SAFE(x_) (BIT32_SAFE(x_) - 1U)
++# define MASK64_SAFE(x_) (BIT64_SAFE(x_) - 1ULL)
++
++# define FLAG(name_) name_ = BIT32(name_##_BIT)
+ 
+ #endif /* !STRACE_MACROS_H */
+-- 
+2.1.4
+

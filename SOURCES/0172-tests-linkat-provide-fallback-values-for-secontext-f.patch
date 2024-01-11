@@ -1,0 +1,181 @@
+From 97e2742a7f1e6e113354911d04505ada3bfb5d70 Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Tue, 18 Jan 2022 18:04:42 +0100
+Subject: [PATCH 172/174] tests/linkat: provide fallback values for secontext
+ fields changes
+
+* tests/linkat.c (mangle_secontext_field): New function.
+(main): Replace calls to update_secontext_field
+with mangle_secontext_field calls.
+---
+ tests/linkat.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
+
+diff --git a/tests/linkat.c b/tests/linkat.c
+index c3e2ee4..decb736 100644
+--- a/tests/linkat.c
++++ b/tests/linkat.c
+@@ -21,6 +21,20 @@
+ #include "secontext.h"
+ #include "xmalloc.h"
+ 
++static void
++mangle_secontext_field(const char *path, enum secontext_field field,
++		       const char *new_val, const char *fallback_val)
++{
++	char *orig = get_secontext_field_file(path, field);
++	if (!orig)
++		return;
++
++	update_secontext_field(path, field,
++			       strcmp(new_val, orig) ? new_val : fallback_val);
++
++	free(orig);
++}
++
+ int
+ main(void)
+ {
+@@ -93,7 +107,8 @@ main(void)
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
+ 	errno = 0;
+-	update_secontext_field(sample_1, SECONTEXT_USER, "system_u");
++	mangle_secontext_field(sample_1, SECONTEXT_USER, "system_u",
++							 "unconfined_u");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 
+ # ifdef PRINT_SECONTEXT_FULL
+@@ -115,7 +130,8 @@ main(void)
+ #endif
+ 
+ 	errno = 0;
+-	update_secontext_field(sample_1, SECONTEXT_TYPE, "default_t");
++	mangle_secontext_field(sample_1, SECONTEXT_TYPE, "default_t",
++							 "unconfined_t");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 	sample_2_secontext = sample_1_secontext;
+ 
+@@ -146,7 +162,8 @@ main(void)
+ 	char *cwd = get_fd_path(dfd_old);
+ 
+ 	errno = 0;
+-	update_secontext_field(".", SECONTEXT_TYPE, "default_t");
++	mangle_secontext_field(".", SECONTEXT_TYPE, "default_t",
++						    "unconfined_t");
+ 	char *dfd_old_secontext = SECONTEXT_FILE(".");
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
+diff --git a/tests-m32/linkat.c b/tests-m32/linkat.c
+index c3e2ee4..decb736 100644
+--- a/tests-m32/linkat.c
++++ b/tests-m32/linkat.c
+@@ -21,6 +21,20 @@
+ #include "secontext.h"
+ #include "xmalloc.h"
+ 
++static void
++mangle_secontext_field(const char *path, enum secontext_field field,
++		       const char *new_val, const char *fallback_val)
++{
++	char *orig = get_secontext_field_file(path, field);
++	if (!orig)
++		return;
++
++	update_secontext_field(path, field,
++			       strcmp(new_val, orig) ? new_val : fallback_val);
++
++	free(orig);
++}
++
+ int
+ main(void)
+ {
+@@ -93,7 +107,8 @@ main(void)
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
+ 	errno = 0;
+-	update_secontext_field(sample_1, SECONTEXT_USER, "system_u");
++	mangle_secontext_field(sample_1, SECONTEXT_USER, "system_u",
++							 "unconfined_u");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 
+ # ifdef PRINT_SECONTEXT_FULL
+@@ -115,7 +130,8 @@ main(void)
+ #endif
+ 
+ 	errno = 0;
+-	update_secontext_field(sample_1, SECONTEXT_TYPE, "default_t");
++	mangle_secontext_field(sample_1, SECONTEXT_TYPE, "default_t",
++							 "unconfined_t");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 	sample_2_secontext = sample_1_secontext;
+ 
+@@ -146,7 +162,8 @@ main(void)
+ 	char *cwd = get_fd_path(dfd_old);
+ 
+ 	errno = 0;
+-	update_secontext_field(".", SECONTEXT_TYPE, "default_t");
++	mangle_secontext_field(".", SECONTEXT_TYPE, "default_t",
++						    "unconfined_t");
+ 	char *dfd_old_secontext = SECONTEXT_FILE(".");
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
+diff --git a/tests-mx32/linkat.c b/tests-mx32/linkat.c
+index c3e2ee4..decb736 100644
+--- a/tests-mx32/linkat.c
++++ b/tests-mx32/linkat.c
+@@ -21,6 +21,20 @@
+ #include "secontext.h"
+ #include "xmalloc.h"
+ 
++static void
++mangle_secontext_field(const char *path, enum secontext_field field,
++		       const char *new_val, const char *fallback_val)
++{
++	char *orig = get_secontext_field_file(path, field);
++	if (!orig)
++		return;
++
++	update_secontext_field(path, field,
++			       strcmp(new_val, orig) ? new_val : fallback_val);
++
++	free(orig);
++}
++
+ int
+ main(void)
+ {
+@@ -93,7 +107,8 @@ main(void)
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
+ 	errno = 0;
+-	update_secontext_field(sample_1, SECONTEXT_USER, "system_u");
++	mangle_secontext_field(sample_1, SECONTEXT_USER, "system_u",
++							 "unconfined_u");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 
+ # ifdef PRINT_SECONTEXT_FULL
+@@ -115,7 +130,8 @@ main(void)
+ #endif
+ 
+ 	errno = 0;
+-	update_secontext_field(sample_1, SECONTEXT_TYPE, "default_t");
++	mangle_secontext_field(sample_1, SECONTEXT_TYPE, "default_t",
++							 "unconfined_t");
+ 	sample_1_secontext = SECONTEXT_FILE(sample_1);
+ 	sample_2_secontext = sample_1_secontext;
+ 
+@@ -146,7 +162,8 @@ main(void)
+ 	char *cwd = get_fd_path(dfd_old);
+ 
+ 	errno = 0;
+-	update_secontext_field(".", SECONTEXT_TYPE, "default_t");
++	mangle_secontext_field(".", SECONTEXT_TYPE, "default_t",
++						    "unconfined_t");
+ 	char *dfd_old_secontext = SECONTEXT_FILE(".");
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
+-- 
+2.1.4
+

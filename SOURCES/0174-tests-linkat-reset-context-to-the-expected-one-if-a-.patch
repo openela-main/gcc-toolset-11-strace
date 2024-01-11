@@ -1,0 +1,190 @@
+From 78a81bcfb71ef3d9f6e8b1a32e123fbbc6112a60 Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Tue, 18 Jan 2022 18:24:34 +0100
+Subject: [PATCH 174/174] tests/linkat: reset context to the expected one if a
+ mismatch has been detected
+
+* tests/secontext.h (reset_secontext_file): New declaration.
+* tests/secontext.c (reset_secontext_file): New function.
+* tests/linkat.c (main): Check that there is no initial mismatch
+in the sample_1 context, reset it otherwise.
+---
+ tests/linkat.c    | 3 +++
+ tests/secontext.c | 7 +++++++
+ tests/secontext.h | 7 +++++++
+ 3 files changed, 17 insertions(+)
+
+diff --git a/tests/linkat.c b/tests/linkat.c
+index decb736..781b85a 100644
+--- a/tests/linkat.c
++++ b/tests/linkat.c
+@@ -103,6 +103,9 @@ main(void)
+ 	if (close(fd_sample_2))
+ 		perror_msg_and_fail("close");
+ 
++	if (*sample_1_secontext && strstr(sample_1_secontext, "!!"))
++		reset_secontext_file(sample_1);
++
+ 	free(sample_1_secontext);
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
+diff --git a/tests/secontext.c b/tests/secontext.c
+index ba271c8..94fadd4 100644
+--- a/tests/secontext.c
++++ b/tests/secontext.c
+@@ -235,6 +235,13 @@ secontext_short_pid(pid_t pid)
+ 	return FORMAT_SPACE_AFTER(raw_secontext_short_pid(pid));
+ }
+ 
++void reset_secontext_file(const char *file)
++{
++	char *proper_ctx = raw_expected_secontext_full_file(file);
++	(void) setfilecon(file, proper_ctx);
++	free(proper_ctx);
++}
++
+ void
+ update_secontext_field(const char *file, enum secontext_field field,
+ 		       const char *newvalue)
+diff --git a/tests/secontext.h b/tests/secontext.h
+index e5571d5..387263e 100644
+--- a/tests/secontext.h
++++ b/tests/secontext.h
+@@ -32,6 +32,8 @@ char *get_secontext_field(const char *full_context, enum secontext_field field);
+ 
+ char *get_secontext_field_file(const char *file, enum secontext_field field);
+ 
++void reset_secontext_file(const char *file);
++
+ void update_secontext_field(const char *file, enum secontext_field field,
+ 			    const char *newvalue);
+ 
+@@ -69,6 +71,11 @@ get_secontext_field_file(const char *file, enum secontext_field field)
+ }
+ 
+ static inline void
++reset_secontext_file(const char *file)
++{
++}
++
++static inline void
+ update_secontext_field(const char *file, enum secontext_field field,
+ 		       const char *newvalue)
+ {
+diff --git a/tests-m32/linkat.c b/tests-m32/linkat.c
+index decb736..781b85a 100644
+--- a/tests-m32/linkat.c
++++ b/tests-m32/linkat.c
+@@ -103,6 +103,9 @@ main(void)
+ 	if (close(fd_sample_2))
+ 		perror_msg_and_fail("close");
+ 
++	if (*sample_1_secontext && strstr(sample_1_secontext, "!!"))
++		reset_secontext_file(sample_1);
++
+ 	free(sample_1_secontext);
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
+diff --git a/tests-m32/secontext.c b/tests-m32/secontext.c
+index ba271c8..94fadd4 100644
+--- a/tests-m32/secontext.c
++++ b/tests-m32/secontext.c
+@@ -235,6 +235,13 @@ secontext_short_pid(pid_t pid)
+ 	return FORMAT_SPACE_AFTER(raw_secontext_short_pid(pid));
+ }
+ 
++void reset_secontext_file(const char *file)
++{
++	char *proper_ctx = raw_expected_secontext_full_file(file);
++	(void) setfilecon(file, proper_ctx);
++	free(proper_ctx);
++}
++
+ void
+ update_secontext_field(const char *file, enum secontext_field field,
+ 		       const char *newvalue)
+diff --git a/tests-m32/secontext.h b/tests-m32/secontext.h
+index e5571d5..387263e 100644
+--- a/tests-m32/secontext.h
++++ b/tests-m32/secontext.h
+@@ -32,6 +32,8 @@ char *get_secontext_field(const char *full_context, enum secontext_field field);
+ 
+ char *get_secontext_field_file(const char *file, enum secontext_field field);
+ 
++void reset_secontext_file(const char *file);
++
+ void update_secontext_field(const char *file, enum secontext_field field,
+ 			    const char *newvalue);
+ 
+@@ -69,6 +71,11 @@ get_secontext_field_file(const char *file, enum secontext_field field)
+ }
+ 
+ static inline void
++reset_secontext_file(const char *file)
++{
++}
++
++static inline void
+ update_secontext_field(const char *file, enum secontext_field field,
+ 		       const char *newvalue)
+ {
+diff --git a/tests-mx32/linkat.c b/tests-mx32/linkat.c
+index decb736..781b85a 100644
+--- a/tests-mx32/linkat.c
++++ b/tests-mx32/linkat.c
+@@ -103,6 +103,9 @@ main(void)
+ 	if (close(fd_sample_2))
+ 		perror_msg_and_fail("close");
+ 
++	if (*sample_1_secontext && strstr(sample_1_secontext, "!!"))
++		reset_secontext_file(sample_1);
++
+ 	free(sample_1_secontext);
+ 
+ #ifdef PRINT_SECONTEXT_MISMATCH
+diff --git a/tests-mx32/secontext.c b/tests-mx32/secontext.c
+index ba271c8..94fadd4 100644
+--- a/tests-mx32/secontext.c
++++ b/tests-mx32/secontext.c
+@@ -235,6 +235,13 @@ secontext_short_pid(pid_t pid)
+ 	return FORMAT_SPACE_AFTER(raw_secontext_short_pid(pid));
+ }
+ 
++void reset_secontext_file(const char *file)
++{
++	char *proper_ctx = raw_expected_secontext_full_file(file);
++	(void) setfilecon(file, proper_ctx);
++	free(proper_ctx);
++}
++
+ void
+ update_secontext_field(const char *file, enum secontext_field field,
+ 		       const char *newvalue)
+diff --git a/tests-mx32/secontext.h b/tests-mx32/secontext.h
+index e5571d5..387263e 100644
+--- a/tests-mx32/secontext.h
++++ b/tests-mx32/secontext.h
+@@ -32,6 +32,8 @@ char *get_secontext_field(const char *full_context, enum secontext_field field);
+ 
+ char *get_secontext_field_file(const char *file, enum secontext_field field);
+ 
++void reset_secontext_file(const char *file);
++
+ void update_secontext_field(const char *file, enum secontext_field field,
+ 			    const char *newvalue);
+ 
+@@ -69,6 +71,11 @@ get_secontext_field_file(const char *file, enum secontext_field field)
+ }
+ 
+ static inline void
++reset_secontext_file(const char *file)
++{
++}
++
++static inline void
+ update_secontext_field(const char *file, enum secontext_field field,
+ 		       const char *newvalue)
+ {
+-- 
+2.1.4
+

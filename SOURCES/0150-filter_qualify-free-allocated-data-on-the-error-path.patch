@@ -1,0 +1,77 @@
+From a034f8a50cbe15d250457ed2eefbf9db059f724f Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Wed, 18 Aug 2021 21:48:38 +0200
+Subject: [PATCH 147/150] filter_qualify: free allocated data on the error path
+ exit of parse_poke_token
+
+While not terribly required due to the fact that issues with option
+parsing lead to program termination, these changes avoid leaking data
+allocated in the function's scope and not stored elsewhere, which might
+come handy if it ever be used dynamically during the runtime.
+
+This also has been reported as resource leaks by covscan, and these
+changes should calm it.
+
+* src/filter_qualify.c (parse_poke_token): Go to err label instead of
+returning right away; free poke->data, poke, and str_tokenized before
+returning false.
+
+References: https://bugzilla.redhat.com/show_bug.cgi?id=1995509
+---
+ src/filter_qualify.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/src/filter_qualify.c b/src/filter_qualify.c
+index df05496..a1a6471 100644
+--- a/src/filter_qualify.c
++++ b/src/filter_qualify.c
+@@ -169,34 +169,40 @@ parse_poke_token(const char *input, struct inject_opts *fopts, bool isenter)
+ 		poke->is_enter = isenter;
+ 
+ 		if ((val = STR_STRIP_PREFIX(token, "@arg")) == token)
+-			return false;
++			goto err;
+ 		if ((val[0] >= '1') && (val[0] <= '7')) {
+ 			poke->arg_no = val[0] - '0';
+ 		} else {
+-			return false;
++			goto err;
+ 		}
+ 		if (val[1] != '=')
+-			return false;
++			goto err;
+ 		val += 2;
+ 
+ 		data_len = strlen(val);
+ 		if ((data_len == 0) || (data_len % 2) || (data_len > 2048))
+-			return false;
++			goto err;
+ 		data_len /= 2;
+ 		poke->data_len = data_len;
+ 		poke->data = xmalloc(data_len);
+ 
+ 		for (size_t i = 0; i < data_len; i++)
+ 			if (sscanf(&val[2 * i], "%2hhx", &poke->data[i]) != 1)
+-				return false;
++				goto err;
+ 
+ 		if (poke_add(fopts->data.poke_idx, poke))
+-			return false;
++			goto err;
+ 	}
+ 	free(str_tokenized);
+ 
+ 	fopts->data.flags |= flag;
+ 	return true;
++
++err:
++	free(poke->data);
++	free(poke);
++	free(str_tokenized);
++	return false;
+ }
+ 
+ static bool
+-- 
+2.1.4
+

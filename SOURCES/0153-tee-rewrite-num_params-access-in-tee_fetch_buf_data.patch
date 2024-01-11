@@ -1,0 +1,52 @@
+From 3a68f90c2a5a208b475cc2014f85ae04541ec5b6 Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Fri, 20 Aug 2021 21:31:01 +0200
+Subject: [PATCH 150/150] tee: rewrite num_params access in tee_fetch_buf_data
+
+Pointer to num_params field of the fetched structure is passed in a
+separate function argument which provokes covscan complaints about
+uninitialised accesses and also tingles my aliasing rules senses.
+Rewrite to access it via the arg_struct argument which is fetched
+earlier in the function flow.
+
+* src/tee.c (TEE_FETCH_BUF_DATA): Change &arg_.num_params
+to offsetof(typeof(arg_), num_params).
+(tee_fetch_buf_data): Accept offset of the num_params field instead
+of pointer to it; reconstruct the num_params pointer using it.
+---
+ src/tee.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/tee.c b/src/tee.c
+index f9eda52..d7e9b15 100644
+--- a/src/tee.c
++++ b/src/tee.c
+@@ -33,7 +33,7 @@ struct tee_ioctl_shm_register_fd_data {
+ 
+ #define TEE_FETCH_BUF_DATA(buf_, arg_, params_) \
+ 	tee_fetch_buf_data(tcp, arg, &buf_, sizeof(arg_), \
+-			   &arg_, &arg_.num_params, \
++			   &arg_, offsetof(typeof(arg_), num_params), \
+ 			   params_)
+ 
+ /* session id is printed as 0x%x in libteec */
+@@ -56,7 +56,7 @@ tee_fetch_buf_data(struct tcb *const tcp,
+ 		   struct tee_ioctl_buf_data *buf,
+ 		   size_t arg_size,
+ 		   void *arg_struct,
+-		   unsigned *num_params,
++		   size_t num_params_offs,
+ 		   uint64_t *params)
+ {
+ 	if (umove_or_printaddr(tcp, arg, buf))
+@@ -69,6 +69,7 @@ tee_fetch_buf_data(struct tcb *const tcp,
+ 		tee_print_buf(buf);
+ 		return RVAL_IOCTL_DECODED;
+ 	}
++	uint32_t *num_params = (uint32_t *) (arg_struct + num_params_offs);
+ 	if (entering(tcp) &&
+ 	    (arg_size + TEE_IOCTL_PARAM_SIZE(*num_params) != buf->buf_len)) {
+ 		/*
+-- 
+2.1.4
+

@@ -1,0 +1,135 @@
+Index: strace-5.12/tests/ipc_msg.c
+===================================================================
+--- strace-5.12.orig/tests/ipc_msg.c	2021-05-18 13:30:38.440896349 +0200
++++ strace-5.12/tests/ipc_msg.c	2021-05-18 13:30:04.628198661 +0200
+@@ -55,8 +55,9 @@
+  * Starting with commit glibc-2.32.9000-149-gbe9b0b9a012780a403a2,
+  * glibc skips msgctl syscall invocations and returns EINVAL
+  * for invalid msgctl commands.
++ * It has been backported into glic-2.28-153 in RHEL 8.5.
+  */
+-#if GLIBC_PREREQ_GE(2, 32)
++#if GLIBC_PREREQ_GE(2, 28)
+ # define TEST_MSGCTL_BOGUS_CMD 0
+ #endif
+ 
+Index: strace-5.12/tests/ipc_shm.c
+===================================================================
+--- strace-5.12.orig/tests/ipc_shm.c	2021-05-18 13:30:22.373040008 +0200
++++ strace-5.12/tests/ipc_shm.c	2021-05-18 13:30:00.835232573 +0200
+@@ -45,8 +45,9 @@
+  * Starting with commit glibc-2.32.9000-207-g9ebaabeaac1a96b0d91f,
+  * glibc skips shmctl syscall invocations and returns EINVAL
+  * for invalid shmctl commands.
++ * It has been backported into glic-2.28-153 in RHEL 8.5.
+  */
+-#if GLIBC_PREREQ_GE(2, 32)
++#if GLIBC_PREREQ_GE(2, 28)
+ # define TEST_SHMCTL_BOGUS_CMD 0
+ #endif
+ 
+Index: strace-5.12/tests/ipc_sem.c
+===================================================================
+--- strace-5.12.orig/tests/ipc_sem.c	2020-12-31 09:00:00.000000000 +0100
++++ strace-5.12/tests/ipc_sem.c	2021-05-18 13:56:51.453832392 +0200
+@@ -27,8 +27,9 @@
+  * Starting with commit glibc-2.32.9000-147-ga16d2abd496bd974a882,
+  * glibc skips semctl syscall invocations and returns EINVAL
+  * for invalid semctl commands.
++ * It has been backported into glic-2.28-153 in RHEL 8.5.
+  */
+-#if GLIBC_PREREQ_GE(2, 32)
++#if GLIBC_PREREQ_GE(2, 28)
+ # define TEST_SEMCTL_BOGUS_CMD 0
+ #endif
+ 
+Index: strace-5.12/tests-m32/ipc_msg.c
+===================================================================
+--- strace-5.12.orig/tests-m32/ipc_msg.c	2021-05-18 13:30:38.440896349 +0200
++++ strace-5.12/tests-m32/ipc_msg.c	2021-05-18 13:30:04.628198661 +0200
+@@ -55,8 +55,9 @@
+  * Starting with commit glibc-2.32.9000-149-gbe9b0b9a012780a403a2,
+  * glibc skips msgctl syscall invocations and returns EINVAL
+  * for invalid msgctl commands.
++ * It has been backported into glic-2.28-153 in RHEL 8.5.
+  */
+-#if GLIBC_PREREQ_GE(2, 32)
++#if GLIBC_PREREQ_GE(2, 28)
+ # define TEST_MSGCTL_BOGUS_CMD 0
+ #endif
+ 
+Index: strace-5.12/tests-m32/ipc_shm.c
+===================================================================
+--- strace-5.12.orig/tests-m32/ipc_shm.c	2021-05-18 13:30:22.373040008 +0200
++++ strace-5.12/tests-m32/ipc_shm.c	2021-05-18 13:30:00.835232573 +0200
+@@ -45,8 +45,9 @@
+  * Starting with commit glibc-2.32.9000-207-g9ebaabeaac1a96b0d91f,
+  * glibc skips shmctl syscall invocations and returns EINVAL
+  * for invalid shmctl commands.
++ * It has been backported into glic-2.28-153 in RHEL 8.5.
+  */
+-#if GLIBC_PREREQ_GE(2, 32)
++#if GLIBC_PREREQ_GE(2, 28)
+ # define TEST_SHMCTL_BOGUS_CMD 0
+ #endif
+ 
+Index: strace-5.12/tests-m32/ipc_sem.c
+===================================================================
+--- strace-5.12.orig/tests-m32/ipc_sem.c	2020-12-31 09:00:00.000000000 +0100
++++ strace-5.12/tests-m32/ipc_sem.c	2021-05-18 13:56:51.453832392 +0200
+@@ -27,8 +27,9 @@
+  * Starting with commit glibc-2.32.9000-147-ga16d2abd496bd974a882,
+  * glibc skips semctl syscall invocations and returns EINVAL
+  * for invalid semctl commands.
++ * It has been backported into glic-2.28-153 in RHEL 8.5.
+  */
+-#if GLIBC_PREREQ_GE(2, 32)
++#if GLIBC_PREREQ_GE(2, 28)
+ # define TEST_SEMCTL_BOGUS_CMD 0
+ #endif
+ 
+Index: strace-5.12/tests-mx32/ipc_msg.c
+===================================================================
+--- strace-5.12.orig/tests-mx32/ipc_msg.c	2021-05-18 13:30:38.440896349 +0200
++++ strace-5.12/tests-mx32/ipc_msg.c	2021-05-18 13:30:04.628198661 +0200
+@@ -55,8 +55,9 @@
+  * Starting with commit glibc-2.32.9000-149-gbe9b0b9a012780a403a2,
+  * glibc skips msgctl syscall invocations and returns EINVAL
+  * for invalid msgctl commands.
++ * It has been backported into glic-2.28-153 in RHEL 8.5.
+  */
+-#if GLIBC_PREREQ_GE(2, 32)
++#if GLIBC_PREREQ_GE(2, 28)
+ # define TEST_MSGCTL_BOGUS_CMD 0
+ #endif
+ 
+Index: strace-5.12/tests-mx32/ipc_shm.c
+===================================================================
+--- strace-5.12.orig/tests-mx32/ipc_shm.c	2021-05-18 13:30:22.373040008 +0200
++++ strace-5.12/tests-mx32/ipc_shm.c	2021-05-18 13:30:00.835232573 +0200
+@@ -45,8 +45,9 @@
+  * Starting with commit glibc-2.32.9000-207-g9ebaabeaac1a96b0d91f,
+  * glibc skips shmctl syscall invocations and returns EINVAL
+  * for invalid shmctl commands.
++ * It has been backported into glic-2.28-153 in RHEL 8.5.
+  */
+-#if GLIBC_PREREQ_GE(2, 32)
++#if GLIBC_PREREQ_GE(2, 28)
+ # define TEST_SHMCTL_BOGUS_CMD 0
+ #endif
+ 
+Index: strace-5.12/tests-mx32/ipc_sem.c
+===================================================================
+--- strace-5.12.orig/tests-mx32/ipc_sem.c	2020-12-31 09:00:00.000000000 +0100
++++ strace-5.12/tests-mx32/ipc_sem.c	2021-05-18 13:56:51.453832392 +0200
+@@ -27,8 +27,9 @@
+  * Starting with commit glibc-2.32.9000-147-ga16d2abd496bd974a882,
+  * glibc skips semctl syscall invocations and returns EINVAL
+  * for invalid semctl commands.
++ * It has been backported into glic-2.28-153 in RHEL 8.5.
+  */
+-#if GLIBC_PREREQ_GE(2, 32)
++#if GLIBC_PREREQ_GE(2, 28)
+ # define TEST_SEMCTL_BOGUS_CMD 0
+ #endif
+ 

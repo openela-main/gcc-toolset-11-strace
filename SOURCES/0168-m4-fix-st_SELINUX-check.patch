@@ -1,0 +1,208 @@
+From b8f375c2c8140e759122bca3e3469386d3ba5184 Mon Sep 17 00:00:00 2001
+From: "Dmitry V. Levin" <ldv@strace.io>
+Date: Mon, 29 Nov 2021 08:00:00 +0000
+Subject: [PATCH 168/174] m4: fix st_SELINUX check
+
+* m4/st_selinux.m4: Make sure selinux support is enabled only if
+all expected functions are provided by libselinux.
+
+Fixes: v5.12~49 "Implement --secontext[=full] option to display SELinux contexts"
+---
+ m4/st_selinux.m4 | 36 ++++++++++++++++--------------------
+ 1 file changed, 16 insertions(+), 20 deletions(-)
+
+diff --git a/m4/st_selinux.m4 b/m4/st_selinux.m4
+index da72a48..7b24eba 100644
+--- a/m4/st_selinux.m4
++++ b/m4/st_selinux.m4
+@@ -34,29 +34,25 @@ AS_IF([test "x$with_libselinux" != xno],
+        AS_IF([test "x$found_selinux_h" = xyes],
+ 	     [saved_LDFLAGS="$LDFLAGS"
+ 	      LDFLAGS="$LDFLAGS $libselinux_LDFLAGS"
+-	      AC_CHECK_LIB([selinux],[getpidcon],
+-		[libselinux_LIBS="-lselinux"
+-		 enable_secontext=yes
+-		],
+-		[if test "x$with_libselinux" != xcheck; then
+-		   AC_MSG_FAILURE([failed to find getpidcon in libselinux])
+-		 fi
+-		]
+-	      )
+-	      AC_CHECK_LIB([selinux],[getfilecon],
+-		[libselinux_LIBS="-lselinux"
+-		 enable_secontext=yes
+-		],
+-		[if test "x$with_libselinux" != xcheck; then
+-		   AC_MSG_FAILURE([failed to find getfilecon in libselinux])
+-		 fi
+-		]
++	      missing=
++	      for func in getpidcon getfilecon; do
++		AC_CHECK_LIB([selinux], [$func], [:],
++			     [missing="$missing $func"])
++	      done
++	      AS_IF([test "x$missing" = x],
++	            [libselinux_LIBS="-lselinux"
++		     enable_secontext=yes
++		    ],
++		    [AS_IF([test "x$with_libselinux" != xcheck],
++			   [AC_MSG_FAILURE([failed to find in libselinux:$missing])]
++		     )
++		    ]
+ 	      )
+ 	      LDFLAGS="$saved_LDFLAGS"
+ 	     ],
+-	     [if test "x$with_libselinux" != xcheck; then
+-		AC_MSG_FAILURE([failed to find selinux.h])
+-	      fi
++	     [AS_IF([test "x$with_libselinux" != xcheck],
++		    [AC_MSG_FAILURE([failed to find selinux.h])]
++	      )
+ 	     ]
+        )
+       ]
+--- old/configure	2022-02-07 20:17:58.364068436 +0100
++++ new/configure	2022-02-07 20:19:17.092067347 +0100
+@@ -18437,9 +18437,12 @@
+        if test "x$found_selinux_h" = xyes; then :
+   saved_LDFLAGS="$LDFLAGS"
+ 	      LDFLAGS="$LDFLAGS $libselinux_LDFLAGS"
+-	      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for getpidcon in -lselinux" >&5
+-$as_echo_n "checking for getpidcon in -lselinux... " >&6; }
+-if ${ac_cv_lib_selinux_getpidcon+:} false; then :
++	      missing=
++	      for func in getpidcon getfilecon; do
++		as_ac_Lib=`$as_echo "ac_cv_lib_selinux_$func" | $as_tr_sh`
++{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $func in -lselinux" >&5
++$as_echo_n "checking for $func in -lselinux... " >&6; }
++if eval \${$as_ac_Lib+:} false; then :
+   $as_echo_n "(cached) " >&6
+ else
+   ac_check_lib_save_LIBS=$LIBS
+@@ -18453,101 +18456,59 @@
+ #ifdef __cplusplus
+ extern "C"
+ #endif
+-char getpidcon ();
++char $func ();
+ int
+ main ()
+ {
+-return getpidcon ();
++return $func ();
+   ;
+   return 0;
+ }
+ _ACEOF
+ if ac_fn_c_try_link "$LINENO"; then :
+-  ac_cv_lib_selinux_getpidcon=yes
++  eval "$as_ac_Lib=yes"
+ else
+-  ac_cv_lib_selinux_getpidcon=no
++  eval "$as_ac_Lib=no"
+ fi
+ rm -f core conftest.err conftest.$ac_objext \
+     conftest$ac_exeext conftest.$ac_ext
+ LIBS=$ac_check_lib_save_LIBS
+ fi
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_selinux_getpidcon" >&5
+-$as_echo "$ac_cv_lib_selinux_getpidcon" >&6; }
+-if test "x$ac_cv_lib_selinux_getpidcon" = xyes; then :
+-  libselinux_LIBS="-lselinux"
+-		 enable_secontext=yes
+-
++eval ac_res=\$$as_ac_Lib
++	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
++$as_echo "$ac_res" >&6; }
++if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
++  :
+ else
+-  if test "x$with_libselinux" != xcheck; then
+-		   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "failed to find getpidcon in libselinux
+-See \`config.log' for more details" "$LINENO" 5; }
+-		 fi
+-
+-
++  missing="$missing $func"
+ fi
+ 
+-	      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for getfilecon in -lselinux" >&5
+-$as_echo_n "checking for getfilecon in -lselinux... " >&6; }
+-if ${ac_cv_lib_selinux_getfilecon+:} false; then :
+-  $as_echo_n "(cached) " >&6
+-else
+-  ac_check_lib_save_LIBS=$LIBS
+-LIBS="-lselinux  $LIBS"
+-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+-/* end confdefs.h.  */
+-
+-/* Override any GCC internal prototype to avoid an error.
+-   Use char because int might match the return type of a GCC
+-   builtin and then its argument prototype would still apply.  */
+-#ifdef __cplusplus
+-extern "C"
+-#endif
+-char getfilecon ();
+-int
+-main ()
+-{
+-return getfilecon ();
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-if ac_fn_c_try_link "$LINENO"; then :
+-  ac_cv_lib_selinux_getfilecon=yes
+-else
+-  ac_cv_lib_selinux_getfilecon=no
+-fi
+-rm -f core conftest.err conftest.$ac_objext \
+-    conftest$ac_exeext conftest.$ac_ext
+-LIBS=$ac_check_lib_save_LIBS
+-fi
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_selinux_getfilecon" >&5
+-$as_echo "$ac_cv_lib_selinux_getfilecon" >&6; }
+-if test "x$ac_cv_lib_selinux_getfilecon" = xyes; then :
++	      done
++	      if test "x$missing" = x; then :
+   libselinux_LIBS="-lselinux"
+-		 enable_secontext=yes
++		     enable_secontext=yes
+ 
+ else
+-  if test "x$with_libselinux" != xcheck; then
+-		   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
++  if test "x$with_libselinux" != xcheck; then :
++  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+ $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "failed to find getfilecon in libselinux
++as_fn_error $? "failed to find in libselinux:$missing
+ See \`config.log' for more details" "$LINENO" 5; }
+-		 fi
+-
+ 
+ fi
+ 
++
++fi
+ 	      LDFLAGS="$saved_LDFLAGS"
+ 
+ else
+-  if test "x$with_libselinux" != xcheck; then
+-		{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
++  if test "x$with_libselinux" != xcheck; then :
++  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+ $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+ as_fn_error $? "failed to find selinux.h
+ See \`config.log' for more details" "$LINENO" 5; }
+-	      fi
++
++fi
+ 
+ 
+ fi
+-- 
+2.1.4
+
